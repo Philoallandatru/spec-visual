@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1519">
+  <meta name="description" content="20 章 NVMe 交互式 3D 教程：跟着一次读写，理解队列、门铃、DMA、初始化与持久化。">
+  <title>NVMe 交互实验室 · 跟着一次读写，看懂存储协议</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230b1519'/%3E%3Cpath d='M12 35V13l24 22V13' stroke='%23dfa65c' stroke-width='5' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <a class="skip" href="#lesson-title">跳至课程内容</a>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="NVMe 实验室首页"><span class="brand-symbol">N<span>V</span></span><span><b>NVMe <em>交互实验室</em></b><small>从一次读写，理解整个协议</small></span></a>
+    <div class="top-actions"><button id="catalog-open" class="outline">课程目录 <span id="chapter-counter">01 / 20</span></button><button id="glossary-open" class="quiet">术语手册</button><span class="progress-label" id="total-progress">已学 0 / 20</span></div>
+  </header>
+  <div class="progress-track"><div id="progress-fill"></div></div>
+  <main class="workspace">
+    <aside class="lesson" id="lesson-scroll" aria-label="讲解与操作">
+      <div class="chapter-kicker"><span id="unit-label"></span><span id="read-time"></span></div>
+      <h1 id="lesson-title" tabindex="-1"></h1>
+      <p class="question" id="lesson-question"></p>
+      <p class="analogy" id="lesson-analogy"></p>
+      <div class="step-heading"><span id="step-count"></span><span class="live-dot"></span><span>跟着看</span></div>
+      <section class="step-copy" aria-live="polite"><h2 id="step-title"></h2><p id="step-body"></p></section>
+      <div class="lesson-controls"><button id="step-prev" class="outline" aria-label="上一步">←</button><button id="play" class="primary">播放讲解</button><button id="step-next" class="outline">下一步 →</button><button id="restart" class="quiet" aria-label="重置本章">↺</button></div>
+      <label class="speed">演示速度 <select id="speed"><option value="6000">慢速 · 6 秒</option><option value="4000" selected>标准 · 4 秒</option><option value="2200">快速 · 2.2 秒</option></select></label>
+      <section class="experiment" id="experiment" aria-label="动手实验"></section>
+      <details class="detail" open><summary>把原理说清楚</summary><div id="explanation"></div></details>
+      <div class="misconception"><span>容易想错的地方</span><p id="misconception"></p></div>
+      <details class="detail quiz"><summary>用一道题检查理解</summary><div id="quiz"></div></details>
+      <details class="detail sources"><summary>规范依据与模型边界</summary><div id="sources"></div></details>
+    </aside>
+    <section class="stage" id="stage" aria-label="可旋转的三维演示">
+      <canvas id="scene" aria-label="NVMe 三维示意场景"></canvas><div id="scene-labels" aria-hidden="true"></div>
+      <div class="scene-top"><div><span class="eyebrow">PROTOCOL / EXPLORER</span><h2 id="scene-title"></h2></div><div class="view-controls"><button id="view-reset" class="glass" title="恢复默认视角">复位视角</button><button id="view-top" class="glass" title="从上方看">俯视</button></div></div>
+      <div class="scene-legend"><span><i class="cyan"></i>主机 / 命令</span><span><i class="copper"></i>控制 / 门铃</span><span><i class="green"></i>数据 / 完成</span></div>
+      <div id="fallback" hidden>当前浏览器无法启动 WebGL。讲解、实验读数和自测仍可使用；请在支持硬件加速的浏览器中打开 3D 场景。</div>
+      <div class="scene-bottom"><div class="metrics" id="metrics" aria-live="polite"></div><div class="caption"><span id="scene-caption"></span><small>拖动旋转 · 滚轮缩放 · 右键平移</small></div><div class="step-dots" id="step-dots" aria-label="讲解步骤"></div></div>
+    </section>
+  </main>
+  <footer class="footer"><button id="chapter-prev" class="quiet">← 上一章</button><span id="footer-topic"></span><div><button id="mark-done" class="outline">标记已学会</button><button id="chapter-next" class="primary">下一章 →</button></div></footer>
+  <dialog id="catalog-dialog"><div class="dialog-head"><div><span class="eyebrow">LEARNING MAP</span><h2>从概念到机制，20 站</h2></div><button class="quiet" data-close aria-label="关闭课程目录">✕</button></div><p class="dialog-intro">可以从头跟学，也可以直接进入一个问题。进度只保存在这个浏览器。</p><nav id="catalog" aria-label="所有课程"></nav></dialog>
+  <dialog id="glossary-dialog"><div class="dialog-head"><div><span class="eyebrow">FIELD NOTES</span><h2>术语随查</h2></div><button class="quiet" data-close aria-label="关闭术语手册">✕</button></div><label class="search-box">搜索术语 <input id="glossary-search" type="search" placeholder="例如：门铃、PRP、命名空间"></label><div id="glossary"></div></dialog>
+  <noscript>这个实验室需要 JavaScript 才能运行交互图解。课程计划和使用说明可在 README.md 中阅读。</noscript>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

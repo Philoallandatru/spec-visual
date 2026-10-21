@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+.llmwiki/state.json
+.llmwiki/embeddings.json
+.llmwiki/pending-embeddings.json
+.llmwiki/candidates/
+.llmwiki/workflows/
+.llmwiki/eval/
+.llmwiki/journal/
+node_modules/
+dist/
+*.log
