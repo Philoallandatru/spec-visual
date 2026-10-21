@@ -1,0 +1,13 @@
+{
+  "name": "pcie-visual-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PCIe 物理层深度图解：差分信号、ISI、3D 眼图、TX/RX 均衡、均衡流程、Lane Margining",
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}

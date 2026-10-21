@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PCIe 物理层实验室</title>
+<style>
+:root{
+  /* 仪器风格的单一深色界面：左侧讲义与控件，右侧 3D 舞台 */
+  --bg:#0a1316; --panel:#0f1b1f; --raise:#142529; --line:#21373d;
+  --fg:#d9e5e7; --muted:#8ba1a6;
+  --copper:#d9954a; --tx:#5ccfe6; --rx:#ef7fa8; --ok:#7fd18b; --bad:#f06464; --amber:#e8b04a;
+  --f-body:"Microsoft YaHei UI","PingFang SC","Noto Sans SC","Segoe UI",system-ui,sans-serif;
+  --f-mono:"Cascadia Mono",Consolas,"JetBrains Mono",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14.5px;line-height:1.7}
+.app{display:grid;grid-template-columns:minmax(360px,440px) 1fr;height:100%}
+.panel{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--panel);border-right:1px solid var(--line)}
+.scroll{flex:1;overflow-y:auto;padding:18px 20px 28px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.brand b{font-size:19px;letter-spacing:.04em;color:var(--copper)}
+.brand span{font-size:12px;color:var(--muted)}
+.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-bottom:18px}
+.nav button{font:inherit;font-size:12.5px;text-align:left;padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;display:flex;gap:6px;align-items:baseline;min-width:0}
+.nav button i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--copper)}
+.nav button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav button:hover{border-color:#35555c;color:var(--fg)}
+.nav button[aria-current="true"]{background:var(--raise);border-color:var(--copper);color:var(--fg)}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;color:var(--copper);margin:0 0 2px}
+h1{font-size:26px;line-height:1.2;margin:0 0 10px;text-wrap:balance}
+h1 small{display:block;font-size:13.5px;font-weight:400;color:var(--muted);margin-top:4px}
+.lead{margin:0 0 14px}
+.lead p{margin:0 0 8px}
+b{color:#fff;font-weight:600}
+code{font-family:var(--f-mono);font-size:.92em;color:#f0c08a}
+.controls{display:flex;flex-direction:column;gap:12px;margin:0 0 14px}
+.controls:empty{display:none}
+.cgroup{display:flex;flex-wrap:wrap;gap:8px 10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#0c171a}
+.cg-title{flex-basis:100%;margin:0;font-size:12px;color:var(--muted);letter-spacing:.08em}
+.btn{font:inherit;font-size:13px;padding:6px 11px;border-radius:7px;border:1px solid #3b5a61;background:var(--raise);color:var(--fg);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--copper)}
+.btn.act{background:#2a1f13;border-color:#7a5427;color:#f5d3a8}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.toggle[aria-pressed="true"]{border-color:var(--copper);background:#2a1f13;color:#f5d3a8}
+.seg{flex-basis:100%;display:flex;flex-direction:column;gap:4px;min-width:0}
+.seg-title{font-size:12px;color:var(--muted)}
+.seg-row{display:flex;flex-wrap:wrap;gap:4px}
+.seg-row button{font-family:var(--f-mono);font-size:12px;padding:4px 8px;border-radius:5px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.seg-row button[aria-pressed="true"]{border-color:var(--tx);color:var(--fg);background:#10303a}
+.sl{flex-basis:100%;display:flex;flex-direction:column;gap:2px;min-width:0}
+.sl-top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.sl output{font-family:var(--f-mono);color:var(--fg);font-variant-numeric:tabular-nums}
+.sl input{width:100%;accent-color:var(--copper)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.status{background:#0b1619;border:1px solid var(--line);border-left:3px solid var(--copper);border-radius:6px;padding:10px 12px;font-size:13px;margin:0 0 14px;font-variant-numeric:tabular-nums}
+.readout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin:2px 0 6px}
+.readout div{display:flex;flex-direction:column}
+.readout span{font-size:11.5px;color:var(--muted)}
+.readout strong{font-family:var(--f-mono);font-size:17px;font-weight:600;color:#fff}
+.chip{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid}
+.chip.ok{color:var(--ok);border-color:#3f7a49}
+.chip.bad{color:#ffb0b0;border-color:#8a3a3a}
+table.kv{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:4px}
+table.kv th{text-align:left;font-weight:400;color:var(--muted);padding:2px 10px 2px 0;white-space:nowrap;vertical-align:top}
+table.kv td{font-family:var(--f-mono);font-size:12px;color:#f0c08a;padding:2px 0;word-break:break-word}
+.plots{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+.plots:empty{display:none}
+figure.plot{margin:0;border:1px solid var(--line);border-radius:8px;background:#0b1619;padding:6px 6px 2px}
+figure.plot figcaption{font-size:12px;color:var(--muted);padding:0 4px 2px}
+figure.plot canvas{display:block;width:100%}
+.log{list-style:none;margin:0 0 14px;padding:0;font-size:12.5px;display:flex;flex-direction:column;gap:3px;font-variant-numeric:tabular-nums}
+.log li{padding:4px 9px;border-radius:5px;background:#0d191c;color:#c3d2d5}
+.log li:first-child{background:#13262b;color:var(--fg)}
+.log li.bad{color:#ffb0b0}
+.log li.ok{color:#bfeac5}
+.log li.ts{font-family:var(--f-mono);font-size:11.5px}
+.points-title{font-size:12px;color:var(--muted);letter-spacing:.1em;margin:16px 0 8px}
+.points{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.points li{position:relative;padding-left:16px;font-size:13.5px;color:#c3d2d5}
+.points li::before{content:"";position:absolute;left:0;top:.72em;width:7px;height:2px;background:var(--copper)}
+.src{font-size:12px;color:var(--muted);margin-top:14px}
+.foot{display:flex;justify-content:space-between;gap:8px;padding:10px 20px;border-top:1px solid var(--line)}
+.stage{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--bg)}
+#gl{display:block;width:100%;height:100%;touch-action:none}
+.hint{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--muted);background:rgba(10,19,22,.78);padding:3px 9px;border-radius:5px;pointer-events:none}
+.viewbar{position:absolute;right:12px;top:10px;display:flex;gap:6px}
+.viewbar .btn{font-size:12px;padding:4px 9px;background:rgba(20,37,41,.9)}
+.nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--muted)}
+@media (max-width:860px){
+  .app{display:flex;flex-direction:column;height:auto}
+  .stage{order:0;height:58svh;min-height:300px}
+  .panel{order:1;border-right:0;border-top:1px solid var(--line)}
+  .scroll{overflow:visible;padding:16px 16px 24px}
+  .foot{padding:10px 16px}
+}
+</style>
+<script type="importmap">
+{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <div class="scroll" id="scroll">
+      <div class="brand"><b>PCIe 物理层实验室</b><span>高速链路 · 眼图 · 均衡</span></div>
+      <nav class="nav" id="nav" aria-label="章节"></nav>
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1 id="title"></h1>
+      <div class="lead" id="lead"></div>
+      <div class="controls" id="controls"></div>
+      <div class="status" id="status" hidden></div>
+      <div class="plots" id="plots"></div>
+      <ol class="log" id="log" hidden></ol>
+      <p class="points-title">要点</p>
+      <ul class="points" id="points"></ul>
+      <p class="src" id="src"></p>
+    </div>
+    <div class="foot">
+      <button class="btn" id="prev" type="button">← 上一章</button>
+      <button class="btn" id="next" type="button">下一章 →</button>
+    </div>
+  </aside>
+  <main class="stage" id="stage">
+    <canvas id="gl" aria-label="3D 演示"></canvas>
+    <div class="viewbar" id="viewbar"></div>
+    <div class="hint">拖动旋转 · 滚轮缩放 · 右键平移 · ←/→ 切换章节</div>
+  </main>
+</div>
+<script type="module" src="./src/main.js"></script>
+<noscript><p style="padding:20px">需要启用 JavaScript。</p></noscript>
+</body>
+</html>
